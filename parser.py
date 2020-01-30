@@ -24,4 +24,27 @@ def start_with_benchmark(func):
     func()
     print("--- %s seconds ---" % (time.time() - start_time))
 
-start_with_benchmark(testlog)
+
+def hh_parse(base_url, headers):
+    jobs = []
+    session = requests.Session()
+    request = session.get(base_url, headers=headers)
+    if request.status_code == 200:
+        soup = bs(request.content, 'html.parser')
+        divs = soup.find_all('div', attrs={'data-qa': 'vacancy-serp__vacancy'})
+        for div in divs:
+            title = div.find('a', attrs={'data-qa' : 'vacancy-serp__vacancy-title'}).text
+            hrefs = div.find('a', attrs={'data-qa': 'vacancy-serp__vacancy-title'})['href']
+            topic1 = div.find('div', attrs={'data-qa': 'vacancy-serp__vacancy_snippet_responsibility'}).text
+            topic2 = div.find('div', attrs={'data-qa': 'vacancy-serp__vacancy_snippet_requirement'}).text
+            content = topic1 + topic2
+            jobs.append({
+                'title': title,
+                'href': hrefs,
+                'content': content
+            })
+        print(jobs)
+    else:
+        print('ERROR!')
+
+hh_parse(base_url,headers)
